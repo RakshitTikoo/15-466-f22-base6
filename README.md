@@ -12,11 +12,11 @@ Screen Shot:
 
 How To Play:
 
-The goal of the game is to score as many points as possible. P1 and P2 have their own type of balls (yellow for P1, red for P2). If a yellow ball hits any brick, it a P1 point, and vice versa for red balls. If a ball (red or yellow) is missed by a Player (it goes behind the player), it counts as the other player's point. The game runs as long there are balls present in the play area. Now breaking the bricks and drop power ups as well, which when caught by the player gives the following power ups - 
+The goal of the game is to score as many points as possible. P1 and P2 have their own type of balls (yellow for P1, red for P2). If a yellow ball hits any brick, it countsas a P1 point, and vice versa for red balls. If a ball (red or yellow) is missed by a Player (it goes behind the player), it counts as the other player's point. The game runs as long there are balls present in the play area. Now breaking the bricks drops power ups as well, which when caught by the player gives the following power ups - 
 
 1) Longer Paddle
-2) Increase Player Speed
-3) Multiple Balls Spawn
+2) Increased Player Speed
+3) Multiple Balls Spawning
 4) Reverse all ball Direction (Activated by pressing W), which is indicated by a string indicating the Power up is available
 5) Change all balls to player color (Activated by pressing Space), which is indicated by a string indicating the Power up is available
 
