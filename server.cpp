@@ -72,7 +72,10 @@ int main(int argc, char **argv) {
 					//client connected:
 
 					//create some player info for them:
-					connection_to_player.emplace(c, game.spawn_player());
+					//connection_to_player.emplace(c, game.spawn_player());
+
+					//Assign P1 and P2
+					connection_to_player.emplace(c, game.assign_player());
 
 				} else if (evt == Connection::OnClose) {
 					//client disconnected:
@@ -112,6 +115,9 @@ int main(int argc, char **argv) {
 		for (auto &[c, player] : connection_to_player) {
 			game.send_state_message(c, player);
 		}
+		// Send P1, P2 States
+		//game.send_state_message(c, P1);
+		//game.send_state_message(c, P2);
 
 	}
 
