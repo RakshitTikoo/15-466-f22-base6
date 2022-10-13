@@ -329,9 +329,26 @@ void Game::update(float elapsed) {
 
 		// Give Random Initial Velocity
 		float x = randnum/10.0f;
+		if(x > 0.8f) x = 0.8f;
 		float y = 1.0f - x;
-		Object[1 + 2 - 1].velocity.x = -x*ball_speed; // Set initial velocity
-		Object[11 + 2 - 1].velocity.x = x*ball_speed; // Set initial velocity
+		if(std::rand()%2 == 0)
+		{
+			Object[1 + 2 - 1].velocity.x = -1.0f*x*ball_speed; // Set initial velocity
+		}
+		else {
+			Object[1 + 2 - 1].velocity.x = x*ball_speed; // Set initial velocity
+		}
+
+		if(std::rand()%2 == 0)
+		{
+			Object[11 + 2 - 1].velocity.x = -1.0f*x*ball_speed; // Set initial velocity
+		}
+		else {
+			Object[11 + 2 - 1].velocity.x = x*ball_speed; // Set initial velocity
+		}
+
+		
+
 		Object[1 + 2 - 1].velocity.y = y*ball_speed; // Set initial velocity
 		Object[11 + 2 - 1].velocity.y = -y*ball_speed; // Set initial velocity
 	}
@@ -418,14 +435,14 @@ void Game::update(float elapsed) {
 				{
 					P2_score += 1;
 					hide_object(&Object[i+2]);
-					//Object[i+2].velocity.y *= -1.0f;
+					////Object[i+2].velocity.y *= -1.0f;
 
 				}
 				else if (Object[i + 2].position.y >= vertical_bounds.y) // Behind P2, P1 score
 				{
 					P1_score += 1;
 					hide_object(&Object[i+2]);
-					//Object[i+2].velocity.y *= -1.0f;
+					////Object[i+2].velocity.y *= -1.0f;
 				}
 			}
 		}
@@ -455,33 +472,69 @@ void Game::update(float elapsed) {
 		for(uint8_t i = 0; i < 20; i++) {
 			if(Object[i + 2].position.y != -500.0f && Object[i + 2].position.x != -500.0f) { // Balls in Play Area
 
+
+				// Ball dims
+				float Ball_cx = Object[i+2].position.x;
+				//float Ball_cy = Object[i+2].position.y;
+				float Ball_lx = Object[i+2].position.x - ball_dim.x/2.0f;
+				float Ball_rx = Object[i+2].position.x + ball_dim.x/2.0f;
+				float Ball_ty = Object[i+2].position.y + ball_dim.y/2.0f;
+				float Ball_by = Object[i+2].position.y - ball_dim.y/2.0f;
+
+
 				// P0 Check
 				float P0_cx = Object[P1_id].position.x;
 				float P0_lx = Object[P1_id].position.x - paddle_dim_P1.x/2.0f;
 				float P0_rx = Object[P1_id].position.x + paddle_dim_P1.x/2.0f;
+				//float P0_cy = Object[P1_id].position.y;
+				float P0_by = Object[P1_id].position.y - paddle_dim_P1.y/2.0f;
+				float P0_ty = Object[P1_id].position.y + paddle_dim_P1.y/2.0f;
 
 				float x_speed = 0.0f;
 				float y_speed = 0.0f;
-				
-				if(check_overlap(&Object[P1_id], paddle_dim_P1, &Object[i+2], ball_dim)) {
-					if(Object[i+2].position.x < P0_rx && Object[i+2].position.x > P0_lx) {
-						x_speed = (Object[i + 2].position.x - P0_cx)/(paddle_dim_P1.x/2.0f);
-						y_speed = 1.0f - std::abs(x_speed);
-						if(y_speed == 0.0f) {
-							y_speed = 0.1f;
-							if(x_speed < 0.0f) x_speed += 0.1f;
-							else x_speed -= 0.1f;
-						}
-						if(Object[i + 2].velocity.y <= 0.0f) { // Top 
-							Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, y_speed*ball_speed); 
-						}
-						else { // Bottom
-							Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, -1.0f*y_speed*ball_speed);
-						}
+				float overlap = 0.0f;
 
-					} 	// Top/Bottom Hit
-					else
-						Object[i + 2].velocity.x *= -1.0f; // Left/Right Hit
+				if(check_overlap(&Object[P1_id], paddle_dim_P1, &Object[i+2], ball_dim)) {
+					// Top Hit
+					if(Ball_lx <= P0_rx && Ball_rx >= P0_lx && Ball_ty > P0_by) {
+						x_speed = (Ball_cx - P0_cx)/(paddle_dim_P1.x/2.0f);
+						if(std::abs(x_speed) > 0.9f) {
+							if(x_speed < 0.0f) x_speed = -0.9f;
+							else x_speed = 0.9f;
+						}
+						y_speed = 1.0f - std::abs(x_speed);
+						Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, y_speed*ball_speed); 
+						// Push out logic 
+						//overlap = std::abs(std::abs(Ball_by) - std::abs(P0_ty));
+						//Object[i+2].position.y += overlap;
+					}
+					// Bottom Hit
+					if(Ball_lx <= P0_rx && Ball_rx >= P0_lx && Ball_by < P0_ty){
+						x_speed = (Ball_cx - P0_cx)/(paddle_dim_P1.x/2.0f);
+						if(std::abs(x_speed) > 0.9f) {
+							if(x_speed < 0.0f) x_speed = -0.9f;
+							else x_speed = 0.9f;
+						}
+						y_speed = 1.0f - std::abs(x_speed);
+						Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, -1.0f*y_speed*ball_speed); 
+						// Push out logic 
+						//overlap = std::abs(std::abs(Ball_ty) - std::abs(P0_by));
+						//Object[i+2].position.y -= overlap;
+					}
+					//// Right Hit
+					//if(Ball_cx >= P0_rx){
+					//	Object[i + 2].velocity.x *= -1.0f;
+					//	//Push out logic
+					//	overlap = std::abs(std::abs(Ball_lx) - std::abs(P0_rx));
+					//	Object[i+2].position.x += overlap*P1_Speed*elapsed;
+					//}
+					//// Left Hit
+					//if(Ball_cx <= P0_lx) {
+					//	Object[i + 2].velocity.x *= -1.0f;
+					//	//Push out logic
+					//	overlap = std::abs(std::abs(Ball_rx) - std::abs(P0_lx));
+					//	Object[i+2].position.x -= overlap*P1_Speed*elapsed;
+					//}
 
 					if(i + 2 >= 12) // P2 balls hitting P1 Paddle
 						swap_ball(&Object[i+2], 0); // Swap to P1 Ball
@@ -492,30 +545,57 @@ void Game::update(float elapsed) {
 				float P1_cx = Object[P2_id].position.x;
 				float P1_lx = Object[P2_id].position.x - paddle_dim_P2.x/2.0f;
 				float P1_rx = Object[P2_id].position.x + paddle_dim_P2.x/2.0f;
+				//float P1_cy = Object[P2_id].position.y;
+				float P1_by = Object[P2_id].position.y - paddle_dim_P2.y/2.0f;
+				float P1_ty = Object[P2_id].position.y + paddle_dim_P2.y/2.0f;
+
 				x_speed = 0.0f;
 				y_speed = 0.0f;
-
+				overlap = 0.0f;
 
 				
 				if(check_overlap(&Object[P2_id], paddle_dim_P2, &Object[i+2], ball_dim)) {
-					if(Object[i+2].position.x < P1_rx && Object[i+2].position.x > P1_lx) {
-						x_speed = (Object[i + 2].position.x - P1_cx)/(paddle_dim_P2.x/2.0f);
+					// Top Hit
+					if(Ball_lx <= P1_rx && Ball_rx >= P1_lx && Ball_ty > P1_by) {
+						x_speed = (Ball_cx - P1_cx)/(paddle_dim_P2.x/2.0f);
+						
+						if(std::abs(x_speed) > 0.9f) {
+							if(x_speed < 0.0f) x_speed = -0.9f;
+							else x_speed = 0.9f;
+						}
 						y_speed = 1.0f - std::abs(x_speed);
-						if(y_speed == 0.0f) {
-							y_speed = 0.1f;
-							if(x_speed < 0.0f) x_speed += 0.1f;
-							else x_speed -= 0.1f;
+						Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, y_speed*ball_speed); 
+						// Push out logic 
+						//overlap = std::abs(std::abs(Ball_by) - std::abs(P1_ty));
+						//Object[i+2].position.y += overlap;
+					}
+					// Bottom Hit
+					if(Ball_lx <= P1_rx && Ball_rx >= P1_lx && Ball_by < P1_ty){
+						x_speed = (Ball_cx - P1_cx)/(paddle_dim_P2.x/2.0f);
+						if(std::abs(x_speed) > 0.9f) {
+							if(x_speed < 0.0f) x_speed = -0.9f;
+							else x_speed = 0.9f;
 						}
-						if(Object[i + 2].velocity.y <= 0.0f){
-							Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, y_speed*ball_speed);
-						}
-						else {
-							Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, -1.0f*y_speed*ball_speed);
-						}
-
-					} 	// Top/Bottom Hit
-					else
-						Object[i + 2].velocity.x *= -1.0f; // Left Right
+						y_speed = 1.0f - std::abs(x_speed);
+						Object[i + 2].velocity = glm::vec2(x_speed*ball_speed, -1.0f*y_speed*ball_speed); 
+						// Push out logic 
+						//overlap = std::abs(std::abs(Ball_ty) - std::abs(P1_by));
+						//Object[i+2].position.y -= overlap;
+					}
+					//// Right Hit
+					//if(Ball_cx >= P1_rx){
+					//	Object[i + 2].velocity.x *= -1.0f;
+					//	//Push out logic
+					//	overlap = std::abs(std::abs(Ball_lx) - std::abs(P1_rx));
+					//	Object[i+2].position.x += overlap*P2_Speed*elapsed;
+					//}
+					//// Left Hit
+					//if(Ball_cx <= P1_lx) {
+					//	Object[i + 2].velocity.x *= -1.0f;
+					//	//Push out logic
+					//	overlap = std::abs(std::abs(Ball_rx) - std::abs(P1_lx));
+					//	Object[i+2].position.x -= overlap*P2_Speed*elapsed;
+					//}					
 
 					if(i + 2 < 12) // P1 balls hitting P2 Paddle
 						swap_ball(&Object[i+2], 1); // Swap to P2 Ball
@@ -547,25 +627,28 @@ void Game::update(float elapsed) {
 						
 						if(randnum == 1) // 10% change of power up 
 						{
-							//printf("Randnum %d\n", randnum);
 							for(uint32_t k = 0; k < 20; k++){
 								if(Object[k+192].position.x == -500.0f && Object[i+192].position.y == -500.0f) {
-									//printf("Randnum %d\n", randnum);
 									Object[k + 192].position = Object[j].position;
 									all_brick_dir[k] = brick_dir;
 									break;
 								}
 							}
 						}
-						float B_lx = Object[j].position.x - brick_dim.x/2.0f;
-						float B_rx = Object[j].position.x + brick_dim.x/2.0f;
+						float Brick_lx = Object[j].position.x - brick_dim.x/2.0f;
+						float Brick_rx = Object[j].position.x + brick_dim.x/2.0f;
+						//float Ball_lx =  Object[i].position.x - ball_dim.x/2.0f;
+						//float Ball_rx =  Object[i].position.x + ball_dim.x/2.0f;
+						float Ball_cx =  Object[i].position.x;
+						//float Ball_cx =	 Object[i].position.x;
 						hide_object(&Object[j]);
-						if(Object[i].position.x < B_rx && Object[i].position.x > B_lx) // Top Bottom Collision
-						{
+						if(Ball_cx <= Brick_lx) // Left Collision
+							Object[i].velocity.x *= -1.0f;
+						else if(Ball_cx >= Brick_rx) // Right Collision
+							Object[i].velocity.x *= -1.0f;
+						else // Top/Bottom Collision
 							Object[i].velocity.y *= -1.0f;
-						}
-						else 
-							Object[i].velocity.x *= -1.0f; // Left Right 
+						
 
 					}
 				}
@@ -671,7 +754,11 @@ void Game::update(float elapsed) {
 						randnum = 1 + std::rand() % 10;
 						float x = randnum/10.0f;
 						float y = 1.0f - x;
-						Object[i + 2].velocity.x = -x*ball_speed; // Set initial velocity
+						if(std::rand()%2 == 0)
+							Object[i + 2].velocity.x = x*ball_speed; // Set initial velocity
+						else 
+							Object[i + 2].velocity.x = -1.0f*x*ball_speed; // Set initial velocity
+
 						Object[i + 2].velocity.y = y*ball_speed; // Set initial velocity
 						Object[i + 2].position = P1_Ball_Spawn_Loc; // Set position
 						play_area_balls -= 1;
@@ -753,7 +840,11 @@ void Game::update(float elapsed) {
 						randnum = 1 + std::rand() % 10;
 						float x = randnum/10.0f;
 						float y = 1.0f - x;
-						Object[i + 2].velocity.x = x*ball_speed; // Set initial velocity
+						if(std::rand()%2 == 0)
+							Object[i + 2].velocity.x = x*ball_speed; // Set initial velocity
+						else 
+							Object[i + 2].velocity.x = -1.0f*x*ball_speed; // Set initial velocity
+
 						Object[i + 2].velocity.y = -y*ball_speed; // Set initial velocity
 						Object[i + 2].position = P2_Ball_Spawn_Loc; // Set position
 						play_area_balls -= 1;
@@ -884,7 +975,7 @@ bool Game::recv_state_message(Connection *connection_) {
 	uint8_t player_count;
 	read(&player_count);
 	// ==================
-	// Do for 2 players - Update for all objects 
+	// For all Players 
 	// ==================
 	 for (uint8_t i = 0; i < player_count; ++i) {
 		//players.emplace_back();
