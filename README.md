@@ -23,7 +23,9 @@ The goal of the game is to score as many points as possible. P1 and P2 have thei
 The play buttons are - 
 
 A/D - Player Movement
+
 Space - Start/Restart Game | Activate Change Color Power
+
 W - Activate Reverse Ball Direction Power
 
 Sources: 
